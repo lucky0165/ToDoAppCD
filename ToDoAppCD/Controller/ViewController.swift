@@ -32,13 +32,13 @@ class ViewController: UITableViewController {
         tableView.reloadData()
     }
     
-    func load() {
-        let request: NSFetchRequest<Contact> = Contact.fetchRequest()
+    func load(with request: NSFetchRequest<Contact> = Contact.fetchRequest()) {
         do {
             contacts = try context.fetch(request)
         } catch {
             print("Error loading data: \(error)")
         }
+        tableView.reloadData()
     }
     
     
@@ -107,5 +107,46 @@ class ViewController: UITableViewController {
         tableView.deselectRow(at: indexPath, animated: true)
         
     }
+    
+    override func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        
+        let action = UISwipeActionsConfiguration()
+        
+        // to delete ==>
+        // context.delete(contacts[indexPath.row])
+        // contacts.remove(at: indexPath.row)
+        
+        
+        return action
+    }
+}
+
+extension ViewController: UISearchBarDelegate {
+    
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        
+        let request: NSFetchRequest<Contact> = Contact.fetchRequest()
+
+        request.predicate = NSPredicate(format: "name CONTAINS[cd] %@", searchBar.text!)
+        
+        let sort = NSSortDescriptor(key: "name", ascending: true)
+        
+        request.sortDescriptors = [sort]
+        
+        load(with: request)
+    }
+    
+    
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        if searchBar.text?.count == 0 {
+            load()
+            
+            DispatchQueue.main.async {
+                searchBar.resignFirstResponder()
+            }
+            
+        }
+    }
+    
 }
 
