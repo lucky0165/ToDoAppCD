@@ -6,20 +6,33 @@
 //
 
 import UIKit
+import CoreData
 
 class ViewController: UITableViewController {
     
     
-    var contacts = [String]()
+    var contacts = [Contact]()
+    
+    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
     let userDefaults = UserDefaults.standard
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        if let contactsToLoad = userDefaults.array(forKey: "contacts") as? [String] {
-            contacts = contactsToLoad
+        
+    }
+    
+    func save() {
+        do {
+        try context.save()
+        } catch {
+            print("Error saving new contact: \(error)")
         }
+        tableView.reloadData()
+    }
+    
+    func load() {
         
     }
     
@@ -34,17 +47,17 @@ class ViewController: UITableViewController {
             
             let textField = alert.textFields![0]
             
-            if let newContact = textField.text {
+            if let name = textField.text {
+                let newContact = Contact(context: self.context)
+                newContact.name = name
+                newContact.done = false
                 
-                if newContact.count > 0 {
-                    self.contacts.append(newContact)
-                    
-                    self.userDefaults.set(self.contacts, forKey: "contacts")
-                    
-                    self.tableView.reloadData()
-                }
+                self.contacts.append(newContact)
+            
+                self.save()
             }
         }
+        
         let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
         
         alert.addAction(saveAction)
@@ -65,7 +78,7 @@ class ViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
         
-        cell.textLabel?.text = contacts[indexPath.row]
+        cell.textLabel?.text = contacts[indexPath.row].name
         
         return cell
     }
@@ -85,12 +98,8 @@ class ViewController: UITableViewController {
     
 
     @IBAction func removeButtonPressed(_ sender: UIBarButtonItem) {
-        
-        userDefaults.removeObject(forKey: "contacts")
-        contacts.removeAll()
+     
         tableView.reloadData()
     }
-    
-    
 }
 
