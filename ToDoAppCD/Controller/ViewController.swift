@@ -82,8 +82,13 @@ class ViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
+        let contact = contacts[indexPath.row]
         
         cell.textLabel?.text = contacts[indexPath.row].name
+        
+        // ternary operator ==> value = condition ? true : false
+        cell.accessoryType = contact.done ? .checkmark : .none
+        
         
         return cell
     }
@@ -94,7 +99,10 @@ class ViewController: UITableViewController {
         
         
     //    let cell = tableView.cellForRow(at: indexPath)
+     
+        contacts[indexPath.row].done = !contacts[indexPath.row].done
         
+        save()
         
         tableView.deselectRow(at: indexPath, animated: true)
         
