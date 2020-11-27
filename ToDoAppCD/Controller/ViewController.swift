@@ -10,17 +10,40 @@ import UIKit
 class ViewController: UITableViewController {
     
     
-    var contacts = [String]()
+    var contacts = [DataModel]()
     
-    let userDefaults = UserDefaults.standard
+    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Contacts.plist")
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        if let contactsToLoad = userDefaults.array(forKey: "contacts") as? [String] {
-            contacts = contactsToLoad
-        }
+        loadContacts()
         
+    }
+    
+    func saveContacts() {
+        let encoder = PropertyListEncoder()
+        
+        do {
+            let data = try encoder.encode(contacts)
+            try data.write(to: dataFilePath!)
+        } catch {
+            print(error)
+        }
+        tableView.reloadData()
+    }
+    
+    func loadContacts() {
+        let decoder = PropertyListDecoder()
+        
+        do {
+            if let data = try? Data(contentsOf: dataFilePath!) {
+                contacts = try decoder.decode([DataModel].self, from: data)
+            }
+        } catch {
+            print(error)
+        }
+        tableView.reloadData()
     }
     
     
@@ -34,15 +57,13 @@ class ViewController: UITableViewController {
             
             let textField = alert.textFields![0]
             
-            if let newContact = textField.text {
+            if let newName = textField.text {
                 
-                if newContact.count > 0 {
-                    self.contacts.append(newContact)
-                    
-                    self.userDefaults.set(self.contacts, forKey: "contacts")
-                    
-                    self.tableView.reloadData()
-                }
+                let newContact = DataModel(name: newName, done: false)
+                self.contacts.append(newContact)
+                
+                self.saveContacts()
+                
             }
         }
         let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
@@ -65,7 +86,14 @@ class ViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
         
-        cell.textLabel?.text = contacts[indexPath.row]
+        
+        
+        cell.textLabel?.text = contacts[indexPath.row].name
+        
+        // ternary operator
+        // value = condition ? true : false
+        
+        cell.accessoryType = contacts[indexPath.row].done == true ? .checkmark : .none
         
         return cell
     }
@@ -74,20 +102,18 @@ class ViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
-        
-    //    let cell = tableView.cellForRow(at: indexPath)
-        
+        contacts[indexPath.row].done = !contacts[indexPath.row].done
+        saveContacts()
         
         tableView.deselectRow(at: indexPath, animated: true)
         
         
     }
     
-
+    
     @IBAction func removeButtonPressed(_ sender: UIBarButtonItem) {
         
-        userDefaults.removeObject(forKey: "contacts")
-        contacts.removeAll()
+        
         tableView.reloadData()
     }
     
