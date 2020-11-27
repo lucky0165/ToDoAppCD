@@ -20,7 +20,7 @@ class ViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        
+        load()
     }
     
     func save() {
@@ -33,7 +33,12 @@ class ViewController: UITableViewController {
     }
     
     func load() {
-        
+        let request: NSFetchRequest<Contact> = Contact.fetchRequest()
+        do {
+            contacts = try context.fetch(request)
+        } catch {
+            print("Error loading data: \(error)")
+        }
     }
     
     
@@ -93,13 +98,6 @@ class ViewController: UITableViewController {
         
         tableView.deselectRow(at: indexPath, animated: true)
         
-        
-    }
-    
-
-    @IBAction func removeButtonPressed(_ sender: UIBarButtonItem) {
-     
-        tableView.reloadData()
     }
 }
 
