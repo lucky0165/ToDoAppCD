@@ -39,6 +39,7 @@ class ViewController: UITableViewController {
         } catch {
             print("Error loading data: \(error)")
         }
+        tableView.reloadData()
     }
     
     
@@ -98,6 +99,21 @@ class ViewController: UITableViewController {
         
         tableView.deselectRow(at: indexPath, animated: true)
         
+    }
+    
+    override func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        
+        let action = UIContextualAction(style: .destructive, title: "Delete") { (action, view, completionHandler) in
+            
+            let contactToRemove = self.contacts[indexPath.row]
+            
+            self.context.delete(contactToRemove)
+            
+            self.save()
+            self.load()
+            
+        }
+        return UISwipeActionsConfiguration(actions: [action])
     }
 }
 
